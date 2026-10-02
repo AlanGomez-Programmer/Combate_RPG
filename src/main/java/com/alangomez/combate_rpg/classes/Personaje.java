@@ -129,6 +129,10 @@ public class Personaje {
             this.puntosVidaMax = puntosVidaMax;
         }
     }
+
+    public void setPuntosVida(double puntosVida) {
+        this.puntosVida = puntosVida;
+    }
     
     public void setPuntosAtaque(double puntosAtaque){
         if (puntosAtaque <= 0){
@@ -145,11 +149,15 @@ public class Personaje {
             this.puntosDefensa = puntosDefensa;
         }
     }
+
+    public void setNivel(int nivel) {
+        this.nivel = nivel;
+    }
     
     
     // Métodos de instancia
     public void atacar(Personaje objetivo){
-        double dano = this.puntosAtaque - objetivo.puntosDefensa;
+        double dano = this.getPuntosAtaque() - objetivo.getPuntosDefensa();
         
         if (dano <= 0){
             dano = 3;
@@ -161,39 +169,40 @@ public class Personaje {
     };
     
     public void recibirDano(double cantidad){
-       
-        this.puntosVida -= cantidad;
         
-        if (this.puntosVida < 0){
-            this.puntosVida = 0.0;
+       double cantidadDano = this.getPuntosVida() - cantidad;
+       this.setPuntosVida(cantidadDano);
+        
+        if (this.getPuntosVida() < 0){
+            this.setPuntosVida(0.0);
         }   
     };
     
     public void curar(){
-        double vidaAntigua = this.puntosVida;
+        double vidaAntigua = this.getPuntosVida();
         
         this.puntosVida += 25;
         
-        if (this.puntosVida > this.puntosVidaMax){
-            this.puntosVida = this.puntosVidaMax;
+        if (this.getPuntosVida() > this.getPuntosVidaMax()){
+            this.setPuntosVida(this.getPuntosVidaMax());
         }
         
-        double vidaRecuperada = this.puntosVida - vidaAntigua;
+        double vidaRecuperada = this.getPuntosVida() - vidaAntigua;
         System.out.printf("%s has recuperado %.2f de vida %n", this.getNombre(), vidaRecuperada);
         System.out.printf("Vida actual: %.2f / %.2f %n", this.getPuntosVida(), this.getPuntosVidaMax());
        
     };
     
     public boolean estaVivo(){
-        return this.puntosVida > 0;
+        return this.getPuntosVida() > 0;
     };
     
     public void subirNivel(){
-        this.nivel += 1;
-        this.puntosVidaMax += 20;
-        this.puntosAtaque += 5;
-        this.puntosDefensa += 2;
-        this.puntosVida = this.puntosVidaMax;
+        this.setNivel(this.getNivel() + 1);
+        this.setPuntosVidaMax(this.getPuntosVidaMax() + 20);
+        this.setPuntosAtaque(this.getPuntosAtaque() + 5 );
+        this.setPuntosDefensa(this.getPuntosDefensa() + 2);
+        this.setPuntosVida(this.getPuntosVidaMax());
         
         System.out.printf("¡Felicidades, %s!, has subido de nivel %n", this.getNombre());
         System.out.printf("has recibido %.2f / %.2f de vida | %.2f de ataque | %.2f de defensa %n", 
