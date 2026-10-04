@@ -179,6 +179,10 @@ El ganador es: Alan
 
 **Requisito:** Java 11 o superior (se usa el método `isBlank()`).
 
+---
+
+## Actualizaciones
+
 --- 
 
 ## 👨 AUTOR
