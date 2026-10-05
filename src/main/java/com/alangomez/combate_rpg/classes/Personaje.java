@@ -1,19 +1,18 @@
 
 package com.alangomez.combate_rpg.classes;
 
-public class Personaje {
+public abstract class Personaje implements Mejorable{
     // Atributos de instancia
-    private String nombre;
-    private double puntosVida;
-    private double puntosVidaMax;
-    private double puntosAtaque;
-    private double puntosDefensa;
-    private int nivel;
+    protected String nombre;
+    protected double puntosVida;
+    protected  double puntosVidaMax;
+    protected double puntosAtaque;
+    protected double puntosDefensa;
+    protected int nivel;
     
     // Atributo estatico
     private static int totalPersonajesCreados = 0;
     private static int totalPersonajesPredeterminados = 0;
-    
     
     // Constructores
        // Constructor Predeterminado
@@ -181,7 +180,7 @@ public class Personaje {
     public void curar(){
         double vidaAntigua = this.getPuntosVida();
         
-        this.puntosVida += 25;
+        this.setPuntosVida(this.getPuntosVida() + 25);
         
         if (this.getPuntosVida() > this.getPuntosVidaMax()){
             this.setPuntosVida(this.getPuntosVidaMax());
@@ -194,9 +193,16 @@ public class Personaje {
     };
     
     public boolean estaVivo(){
-        return this.getPuntosVida() > 0;
+        return this.getPuntosVida() > 0.0;
     };
     
+    protected double calcularDanoBase(Personaje objetivo){
+        double calculo = this.getPuntosAtaque() - objetivo.getPuntosDefensa(); 
+        return  (calculo <= 0) ? calculo : 3;
+    }  
+    
+    // Se agrega el @Override ya que este método ya esta en mejorable y se esta sobre escribiendo aqui
+    @Override
     public void subirNivel(){
         this.setNivel(this.getNivel() + 1);
         this.setPuntosVidaMax(this.getPuntosVidaMax() + 20);
@@ -204,11 +210,13 @@ public class Personaje {
         this.setPuntosDefensa(this.getPuntosDefensa() + 2);
         this.setPuntosVida(this.getPuntosVidaMax());
         
-        System.out.printf("¡Felicidades, %s!, has subido de nivel %n", this.getNombre());
-        System.out.printf("has recibido %.2f / %.2f de vida | %.2f de ataque | %.2f de defensa %n", 
-                this.getPuntosVida(),
-                this.getPuntosVidaMax(), 
-                this.getPuntosAtaque(), this.getPuntosDefensa());
+        System.out.printf("¡Felicidades, %s! %n", this.getNombre());
+        this.mostrarMensajeNivel(this.getNivel());
+        System.out.println("has recibido:");
+        System.out.printf("-> %.2f de ataque %n", this.getPuntosAtaque());
+        System.out.printf("-> %.2f de defensa %n",  this.getPuntosDefensa());
+        System.out.printf("-> %.2f / %.2f de vida %n", this.getPuntosVida(), this.getPuntosVidaMax());
+        
     };
     
     public void mostrarEstado(){
