@@ -4,11 +4,13 @@ package com.alangomez.combate_rpg.classes;
 public class Guerrero extends Personaje implements Curable{
     private double escudo;
     private final double SUMA_ESCUDO = 10.0;
+    private String tipo;
 
     // Constructor Parametrizado
     public Guerrero(String nombre, double puntosVidaMax, double puntosAtaque, double puntosDefensa, double escudo) {
         super(nombre, puntosVidaMax, puntosAtaque, puntosDefensa);
         this.escudo = escudo;
+        this.tipo = "Gerrero";
     }
     
     // Constructor Predeterminado
@@ -16,13 +18,21 @@ public class Guerrero extends Personaje implements Curable{
         this("Guerrero Novato", 120.0, 15.0, 8.0, 20.0);
     }
     
+    // getters
     public double getEscudo(){
         return this.escudo;
     }
     
+     public String getTipo(){
+        return this.tipo;
+    }
+    
+    // setter
     public void setEscudo(double escudo){
         this.escudo = escudo;
     }
+    
+  
     
     // Métodos
     @Override
