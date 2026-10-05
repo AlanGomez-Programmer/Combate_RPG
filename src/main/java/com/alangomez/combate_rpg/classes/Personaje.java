@@ -1,45 +1,31 @@
-
 package com.alangomez.combate_rpg.classes;
 
-public abstract class Personaje implements Mejorable{
-    // Atributos de instancia
+// CLASE ABSTRACTA: no se puede hacer new Personaje(...), solo sirve como base para las clases hijas.
+// INTERFACE: implementa Mejorable, por eso debe tener subirNivel() y recibe mostrarMensajeNivel().
+public abstract class Personaje implements Mejorable {
+
+    // Atributos de instancia protected: las clases hijas pueden usarlos directamente (HERENCIA)
     protected String nombre;
     protected double puntosVida;
-    protected  double puntosVidaMax;
+    protected double puntosVidaMax;
     protected double puntosAtaque;
     protected double puntosDefensa;
     protected int nivel;
-    
-    // Atributo estatico
+
+    // Atributos estáticos: pertenecen a la clase y se comparten entre todos los personajes
     private static int totalPersonajesCreados = 0;
-    private static int totalPersonajesPredeterminados = 0;
-    
-    // Constructores
-       // Constructor Predeterminado
-    public Personaje(){
-        
-        ++totalPersonajesPredeterminados;
-        String numeroPersonaje = (totalPersonajesPredeterminados == 1) ? "" : String.valueOf(totalPersonajesPredeterminados); 
-        this.nombre = "Guerrero Novato " + numeroPersonaje;
-        this.puntosVidaMax = 100.0;
-        this.puntosVida = 100.0;
-        this.puntosAtaque = 15.0;
-        this.puntosDefensa = 5.0;
-        this.nivel = 1;
-        
-        totalPersonajesCreados++;
-    }
-    
-    // Constructor parametrizado
+    private static int totalPersonajesSinNombre = 0;
+
+    // Constructor: las clases hijas lo llaman con super(...)
     public Personaje(String nombre, double puntosVidaMax, double puntosAtaque, double puntosDefensa) {
 
         // Validación del nombre
         if (nombre != null && !nombre.isBlank()) {
-            this.nombre = nombre;
+            this.nombre = nombre.trim();
         } else {
-            ++totalPersonajesPredeterminados;
-            String numeroPersonaje = (totalPersonajesPredeterminados == 1) ? "" : String.valueOf(totalPersonajesPredeterminados);
-            this.nombre = "Guerrero Novato " + numeroPersonaje;
+            totalPersonajesSinNombre++;
+            this.nombre = (totalPersonajesSinNombre == 1) ? "Aventurero" : "Aventurero " + totalPersonajesSinNombre;
+            System.out.printf("Nombre vacío, se asignará \"%s\"%n", this.nombre);
         }
 
         // Validación de los datos ingresados
@@ -79,155 +65,91 @@ public abstract class Personaje implements Mejorable{
 
         this.nivel = 1;
 
-        // Suma el nuevo personaje ingresado
+        // Suma el nuevo personaje al contador estático
         totalPersonajesCreados++;
     }
-    // Métodos get y set
-    
-        // getter
-    public String getNombre(){
+
+    // ===== Getters =====
+    public String getNombre() {
         return nombre;
     }
 
     public int getNivel() {
         return nivel;
     }
-    
-    public double getPuntosVidaMax(){
-        return puntosVidaMax;
-    }
-    
-    public double getPuntosVida(){
+
+    public double getPuntosVida() {
         return puntosVida;
     }
-    
-    public double getPuntosAtaque(){
+
+    public double getPuntosVidaMax() {
+        return puntosVidaMax;
+    }
+
+    public double getPuntosAtaque() {
         return puntosAtaque;
     }
-    
-    public double getPuntosDefensa(){
+
+    public double getPuntosDefensa() {
         return puntosDefensa;
     }
-    
-     // Método estático
-    public static int getTotalPersonajesCreados(){
-      return totalPersonajesCreados;  
-    };
-    
-        // Setter
-    public void setNombre(String nombre){
-        if (nombre != null && !nombre.trim().isEmpty()){
-           this.nombre = nombre;
+
+    // Método estático: se llama con Personaje.getTotalPersonajesCreados()
+    public static int getTotalPersonajesCreados() {
+        return totalPersonajesCreados;
+    }
+
+    // ===== Métodos ABSTRACTOS: cada clase hija los implementa a su manera (POLIMORFISMO) =====
+    public abstract void atacar(Personaje objetivo);
+
+    public abstract void habilidadEspecial(Personaje objetivo);
+
+    public abstract String getTipo();
+
+    // ===== Métodos concretos: las clases hijas los heredan o los sobrescriben =====
+    public void recibirDano(double cantidad) {
+        this.puntosVida -= cantidad;
+
+        if (this.puntosVida < 0) {
+            this.puntosVida = 0.0;
         }
     }
 
-    public void setPuntosVidaMax(double puntosVidaMax){
-        if (puntosVidaMax <= 0){
-            System.out.println("No se aceptan valores menores o iguales a 0 en el máximo de puntos de vida");
-        } else {
-            this.puntosVidaMax = puntosVidaMax;
-        }
+    public boolean estaVivo() {
+        return this.puntosVida > 0.0;
     }
 
-    public void setPuntosVida(double puntosVida) {
-        this.puntosVida = puntosVida;
-    }
-    
-    public void setPuntosAtaque(double puntosAtaque){
-        if (puntosAtaque <= 0){
-            System.out.println("No se aceptan valores menores o iguales a 0 en los puntos de ataque");
-        } else {
-            this.puntosAtaque = puntosAtaque;
-        } 
-    }
-    
-    public void setPuntosDefensa(double puntosDefensa){
-        if (puntosDefensa <= 0){
-            System.out.println("No se aceptan valores menores o iguales a 0 en los puntos de defensa");
-        } else {
-            this.puntosDefensa = puntosDefensa;
-        }
+    // protected: solo lo usan Personaje y sus clases hijas
+    protected double calcularDanoBase(Personaje objetivo) {
+        double calculo = this.puntosAtaque - objetivo.puntosDefensa;
+        return (calculo <= 0) ? 3.0 : calculo;
     }
 
-    public void setNivel(int nivel) {
-        this.nivel = nivel;
-    }
-    
-    
-    // Métodos de instancia
-    public void atacar(Personaje objetivo){
-        double dano = this.getPuntosAtaque() - objetivo.getPuntosDefensa();
-        
-        if (dano <= 0){
-            dano = 3;
-        }
-        
-        objetivo.recibirDano(dano);
-        
-        System.out.printf("%s atacó a %s y le provocó %.2f de daño %n", this.getNombre(), objetivo.getNombre(), dano);
-    };
-    
-    public void recibirDano(double cantidad){
-        
-       double cantidadDano = this.getPuntosVida() - cantidad;
-       this.setPuntosVida(cantidadDano);
-        
-        if (this.getPuntosVida() < 0){
-            this.setPuntosVida(0.0);
-        }   
-    };
-    
-    public void curar(){
-        double vidaAntigua = this.getPuntosVida();
-        
-        this.setPuntosVida(this.getPuntosVida() + 25);
-        
-        if (this.getPuntosVida() > this.getPuntosVidaMax()){
-            this.setPuntosVida(this.getPuntosVidaMax());
-        }
-        
-        double vidaRecuperada = this.getPuntosVida() - vidaAntigua;
-        System.out.printf("%s has recuperado %.2f de vida %n", this.getNombre(), vidaRecuperada);
-        System.out.printf("Vida actual: %.2f / %.2f %n", this.getPuntosVida(), this.getPuntosVidaMax());
-       
-    };
-    
-    public boolean estaVivo(){
-        return this.getPuntosVida() > 0.0;
-    };
-    
-    protected double calcularDanoBase(Personaje objetivo){
-        double calculo = this.getPuntosAtaque() - objetivo.getPuntosDefensa(); 
-        return  (calculo <= 0) ? calculo : 3;
-    }  
-    
-    // Se agrega el @Override ya que este método ya esta en mejorable y se esta sobre escribiendo aqui
+    // @Override porque implementa el método declarado en la interfaz Mejorable
     @Override
-    public void subirNivel(){
-        this.setNivel(this.getNivel() + 1);
-        this.setPuntosVidaMax(this.getPuntosVidaMax() + 20);
-        this.setPuntosAtaque(this.getPuntosAtaque() + 5 );
-        this.setPuntosDefensa(this.getPuntosDefensa() + 2);
-        this.setPuntosVida(this.getPuntosVidaMax());
-        
-        System.out.printf("¡Felicidades, %s! %n", this.getNombre());
-        this.mostrarMensajeNivel(this.getNivel());
-        System.out.println("has recibido:");
-        System.out.printf("-> %.2f de ataque %n", this.getPuntosAtaque());
-        System.out.printf("-> %.2f de defensa %n",  this.getPuntosDefensa());
-        System.out.printf("-> %.2f / %.2f de vida %n", this.getPuntosVida(), this.getPuntosVidaMax());
-        
-    };
-    
-    public void mostrarEstado(){
-        System.out.printf("-> Nombre: %s %n", this.getNombre());
-        System.out.printf("-> Nivel: %d %n", this.getNivel());
-        System.out.printf("-> Vida: %.2f / %.2f %n", this.getPuntosVida(), this.getPuntosVidaMax());
-        System.out.printf("-> Ataque: %.2f %n", this.getPuntosAtaque());
-        System.out.printf("-> Defensa: %.2f %n", this.getPuntosDefensa());
-    };
-    
-   
-    
-    
+    public void subirNivel() {
+        this.nivel += 1;
+        this.puntosVidaMax += 20.0;
+        this.puntosAtaque += 5.0;
+        this.puntosDefensa += 2.0;
+        this.puntosVida = this.puntosVidaMax;
+
+        // Método default de la interfaz Mejorable
+        this.mostrarMensajeNivel(this.nivel);
+
+        System.out.printf("¡Felicidades, %s! Ahora tienes:%n", this.nombre);
+        System.out.printf("-> Vida: %.2f / %.2f%n", this.puntosVida, this.puntosVidaMax);
+        System.out.printf("-> Ataque: %.2f%n", this.puntosAtaque);
+        System.out.printf("-> Defensa: %.2f%n", this.puntosDefensa);
+    }
+
+    public void mostrarEstado() {
+        // getTipo() es abstracto: POLIMORFISMO decide qué tipo se imprime
+        System.out.printf("-> Tipo: %s%n", this.getTipo());
+        System.out.printf("-> Nombre: %s%n", this.nombre);
+        System.out.printf("-> Nivel: %d%n", this.nivel);
+        System.out.printf("-> Vida: %.2f / %.2f%n", this.puntosVida, this.puntosVidaMax);
+        System.out.printf("-> Ataque: %.2f%n", this.puntosAtaque);
+        System.out.printf("-> Defensa: %.2f%n", this.puntosDefensa);
+    }
 }

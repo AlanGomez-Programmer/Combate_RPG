@@ -1,85 +1,85 @@
-
 package com.alangomez.combate_rpg.classes;
 
-public class Arquero extends Personaje{
-    // Atributo propio
-    private int presicion;
-    private String tipo;
-    
-    // Constructor parametrizado
-    public Arquero(String nombre, double puntosVidaMax, double puntosAtaque, double puntosDefensa, int presicion){
+// HERENCIA: Arquero extiende Personaje
+// NO implementa Curable: el Arquero no puede curarse
+public class Arquero extends Personaje {
+
+    private static final int PRECISION_MAXIMA_NIVEL = 95;
+
+    // Atributo propio (entre 0 y 100)
+    private int precision;
+
+    // Constructor parametrizado: usa super(...)
+    public Arquero(String nombre, double puntosVidaMax, double puntosAtaque,
+                   double puntosDefensa, int precision) {
         super(nombre, puntosVidaMax, puntosAtaque, puntosDefensa);
-        
-        boolean presicionValida = presicion < 0 && presicion > 100;
-        
-        if (presicionValida){
-            System.out.println("Por defecto se asignarán 40 puntos de presición");
-            this.presicion = 40;
+
+        if (precision < 0 || precision > 100) {
+            System.out.println("Precisión inválida (debe estar entre 0 y 100), se asignará 40 por defecto");
+            this.precision = 40;
         } else {
-            this.presicion = presicion;
+            this.precision = precision;
         }
-        
-        this.tipo = "Arquero";
     }
-    
-    // Constructor predeterminado
-    public Arquero(){
-        this( "Arquero Novato", 90.0, 18.0, 4.0, 40);
+
+    // Constructor predeterminado: usa this(...)
+    public Arquero() {
+        this("Arquero Novato", 90.0, 18.0, 4.0, 40);
     }
-    
-    // getter
-    public int getPresicion(){
-        return this.presicion;
+
+    public int getPrecision() {
+        return precision;
     }
-    
-    public String getTipo(){
-        return this.tipo;
-    }
-    
-    // setter
-    public void setPresicion(int presicion){
-        this.presicion = presicion;
-    }
-    
-    // Métodos
+
+    // POLIMORFISMO: implementación propia de los métodos abstractos
     @Override
-    public void atacar(Personaje objetivo){
-        double dano = Math.random() * 100;
-        
-        if (dano < this.getPresicion()){
-            //  Ejecución de ataque critico
-            
+    public String getTipo() {
+        return "Arquero";
+    }
+
+    // Ataque básico: puede ser crítico según la precisión
+    @Override
+    public void atacar(Personaje objetivo) {
+        double probabilidad = Math.random() * 100;
+
+        if (probabilidad < this.precision) {
+            Batalla.ejecutarAtaqueCritico(this, objetivo, 1.5);
         } else {
+            double dano = calcularDanoBase(objetivo);
+            System.out.printf("%s dispara una flecha a %s y causa %.2f de daño%n",
+                    this.nombre, objetivo.getNombre(), dano);
             objetivo.recibirDano(dano);
         }
     }
-    
-    // Habilidad especial: Lluvia de flechas, se lanzan 3 flechas
-    public void habilidadEspecial(Personaje objetivo){
-        double cantidadImpactos = 3;
-        
-        for (int i = 0; i < cantidadImpactos; i++){
-            System.out.printf("%s has lanzado una flecha a %s %n", this.getNombre(), objetivo.getNombre());
-            double dano = ((this.getPuntosAtaque() * 0.6)-objetivo.getPuntosDefensa());
-            if (dano < 3) { dano = 3; }
-            objetivo.recibirDano(dano);
-            System.out.printf("%s has recibido una flecha de %s %n", objetivo.getNombre(),this.getNombre());
-        }   
-    }
-    
+
+    // Habilidad especial: Lluvia de Flechas, 3 impactos
     @Override
-    public void subirNivel(){
+    public void habilidadEspecial(Personaje objetivo) {
+        System.out.printf("%s usa Lluvia de Flechas contra %s%n", this.nombre, objetivo.getNombre());
+
+        for (int i = 1; i <= 3; i++) {
+            double dano = this.puntosAtaque * 0.6 - objetivo.getPuntosDefensa();
+            if (dano < 3.0) {
+                dano = 3.0;
+            }
+            System.out.printf("  Impacto %d: %.2f de daño%n", i, dano);
+            objetivo.recibirDano(dano);
+        }
+    }
+
+    @Override
+    public void subirNivel() {
         super.subirNivel();
-        this.setPresicion(this.getPresicion() + 3);
-        
-        if (this.getPresicion() > 95){ this.setPresicion(95); }
-        
-        System.out.printf("-> %d de presición %n", this.getPresicion() );
+
+        if (this.precision < PRECISION_MAXIMA_NIVEL) {
+            this.precision = Math.min(this.precision + 3, PRECISION_MAXIMA_NIVEL);
+        }
+        System.out.printf("-> Precisión: %d%n", this.precision);
     }
-    
+
     @Override
-    public void mostrarEstado(){
+    public void mostrarEstado() {
         super.mostrarEstado();
-        System.out.printf("-> Nivel: %d %n", this.getPresicion());
+        System.out.printf("-> Precisión: %d%n", this.precision);
     }
 }
