@@ -1,13 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
- */
+
 package com.alangomez.combate_rpg.classes;
 
-/**
- *
- * @author alangomez
- */
 public interface Mejorable {
+    void subirNivel();
     
+    default void mostrarMensajeNivel(int nivel){
+        System.out.printf("*** ¡Alcanzó el nivel %d! *** %n", nivel);
+    }
 }
