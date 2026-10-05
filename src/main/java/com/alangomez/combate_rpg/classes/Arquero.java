@@ -4,6 +4,7 @@ package com.alangomez.combate_rpg.classes;
 public class Arquero extends Personaje{
     // Atributo propio
     private int presicion;
+    private String tipo;
     
     // Constructor parametrizado
     public Arquero(String nombre, double puntosVidaMax, double puntosAtaque, double puntosDefensa, int presicion){
@@ -17,6 +18,8 @@ public class Arquero extends Personaje{
         } else {
             this.presicion = presicion;
         }
+        
+        this.tipo = "Arquero";
     }
     
     // Constructor predeterminado
@@ -27,6 +30,10 @@ public class Arquero extends Personaje{
     // getter
     public int getPresicion(){
         return this.presicion;
+    }
+    
+    public String getTipo(){
+        return this.tipo;
     }
     
     // setter

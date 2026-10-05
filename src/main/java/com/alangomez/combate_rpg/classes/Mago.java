@@ -5,12 +5,14 @@ public class Mago extends Personaje implements Curable{
     // Atributos propios
     private double mana;
     private double manaMax;
+    private String tipo;
     
     // Constructor parametrizado
     public Mago(String nombre, double puntosVidaMax, double puntosAtaque, double puntosDefensa, double manaMax){
         super(nombre, puntosVidaMax, puntosAtaque, puntosDefensa);
         this.manaMax = manaMax;
         this.mana = this.manaMax;
+        this.tipo = "Mago";
     }
     
     public Mago(){
@@ -26,6 +28,10 @@ public class Mago extends Personaje implements Curable{
         return this.manaMax;
     }
     
+     public String getTipo(){
+        return this.tipo;
+    }
+     
     // setters
     public void setMana(double mana){
         this.mana = mana;
