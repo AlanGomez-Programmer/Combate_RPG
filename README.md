@@ -4,6 +4,8 @@ Simulador de combate por turnos que se ejecuta en consola. El usuario crea dos p
 
 El proyecto fue desarrollado como taller práctico de **Programación Orientada a Objetos**, aplicando clases, objetos, atributos, métodos, constructores y miembros estáticos, sin utilizar arreglos, listas, herencia ni polimorfismo.
 
+> La versión 2.0 incorpora herencia, interfaces y polimorfismo. Consulta la sección [Actualizaciones](#-actualizaciones) para ver los cambios.
+
 ---
 
 ## 📁 Estructura del proyecto
@@ -181,9 +183,139 @@ El ganador es: Alan
 
 ---
 
-## Actualizaciones
+## 🔄 Actualizaciones
 
---- 
+### Versión 2.0: Herencia, interfaces y polimorfismo
+
+En esta versión el simulador evolucionó: los personajes dejaron de ser una única clase y pasaron a formar una **jerarquía de clases**. Ahora existen tres tipos de combatientes (Guerrero, Mago y Arquero), cada uno con su propio ataque, habilidad especial y atributo exclusivo. Se mantiene la restricción de no usar arreglos, listas ni colecciones.
+
+#### 📁 Nueva estructura del proyecto
+
+```
+com.alangomez.combate_rpg
+├── Main.java                 → Menú interactivo (10 opciones)
+└── classes
+    ├── Curable.java          → Interface para los personajes que pueden curarse
+    ├── Mejorable.java        → Interface para subir de nivel
+    ├── Personaje.java        → Clase abstracta base
+    ├── Guerrero.java         → Clase hija (Curable)
+    ├── Mago.java             → Clase hija (Curable)
+    ├── Arquero.java          → Clase hija (no Curable)
+    └── Batalla.java          → Métodos estáticos de combate
+```
+
+#### 🔌 Interfaces
+
+| Interface | Contenido | La implementan |
+|---|---|---|
+| `Mejorable` | Método `subirNivel()` y método **default** `mostrarMensajeNivel(int nivel)`, que imprime `*** ¡Alcanzó el nivel X! ***`. | `Personaje` (y por herencia, todas las clases hijas). |
+| `Curable` | Constante `CURACION_BASE` y método `curar()`. | `Guerrero` y `Mago`. El `Arquero` no puede curarse. |
+
+#### 🏛️ Clase abstracta `Personaje`
+
+`Personaje` ahora es **abstracta**, por lo que no se puede hacer `new Personaje(...)`; solo sirve como base para las clases hijas. Sus atributos pasaron a ser `protected` para que las clases hijas puedan usarlos directamente.
+
+Contiene los métodos comunes a todos los personajes (`recibirDano`, `estaVivo`, `subirNivel`, `mostrarEstado` y el método protegido `calcularDanoBase`) y declara tres **métodos abstractos** que cada clase hija implementa a su manera: `atacar(Personaje objetivo)`, `habilidadEspecial(Personaje objetivo)` y `getTipo()`.
+
+#### ⚔️ Clases hijas
+
+| Clase | Atributo propio | Ataque básico | Habilidad especial | ¿Curable? |
+|---|---|---|---|---|
+| `Guerrero` | `escudo` | Daño base (ataque − defensa). | **Golpe Furioso:** ataque × 1.5 − defensa; el guerrero pierde 10 de vida (sin bajar de 1). | ✅ Recupera `CURACION_BASE`. |
+| `Mago` | `mana` y `manaMax` | **Rayo Arcano:** ignora la mitad de la defensa y cuesta 5 de maná. | **Bola de Fuego:** ataque × 2, ignora la defensa y cuesta 30 de maná. | ✅ Recupera `CURACION_BASE + 5` a cambio de 20 de maná. |
+| `Arquero` | `precision` (0 a 100) | Probabilidad de **golpe crítico** según su precisión; si no, daño base. | **Lluvia de Flechas:** 3 impactos de ataque × 0.6 − defensa. | ❌ No implementa `Curable`. |
+
+Cada clase hija tiene dos constructores: uno **parametrizado**, que usa `super(...)`, y uno **predeterminado**, que usa `this(...)` con valores por defecto ("Guerrero Novato", "Mago Aprendiz" y "Arquero Novato").
+
+Además, cada una **sobrescribe** `subirNivel()` y `mostrarEstado()` llamando primero al método del padre con `super.metodo()` y luego agregando lo propio: el Guerrero suma escudo, el Mago aumenta y restaura su maná, y el Arquero gana precisión (máximo 95). El Guerrero también sobrescribe `recibirDano()` para que su escudo absorba el daño antes que la vida.
+
+#### 🎲 Cambios en `Batalla`
+
+Todos los métodos reciben referencias de tipo `Personaje`, por lo que funcionan con cualquier tipo de combatiente sin preguntar cuál es.
+
+| Método | Novedad |
+|---|---|
+| `intentarCurar(Personaje p)` | **Nuevo.** Usa `instanceof Curable` para saber si el personaje puede curarse; si es así, hace el casting a `Curable` y llama a `curar()`. |
+| `iniciarPeleaAutomatica(p1, p2)` | Los turnos múltiplos de 3 usan `habilidadEspecial()` y los demás `atacar()`. Al final muestra el ganador junto con su tipo. |
+| `ejecutarAtaqueCritico(...)` | Ahora lo usa el `Arquero` cuando acierta un golpe crítico. |
+
+#### 🎮 Nuevo menú
+
+```
+==========================================
+        SIMULADOR DE COMBATE RPG
+==========================================
+1.  Crear Personaje 1
+2.  Crear Personaje 2
+3.  Ver ficha técnica de los personajes
+4.  Subir de nivel a un personaje
+5.  Curar a un personaje
+6.  Realizar un ataque básico
+7.  Usar habilidad especial
+8.  Iniciar Batalla Automática (P1 vs P2)
+9.  Ver total de personajes creados
+10. Salir
+==========================================
+```
+
+Al crear un personaje, el usuario elige el **tipo** (Guerrero, Mago o Arquero) y el **constructor** (predeterminado o parametrizado). Si elige el parametrizado, se le piden también los datos propios de la clase (escudo, maná o precisión). El objeto se guarda siempre en una variable de tipo `Personaje`.
+
+#### 🛠️ Nuevos conceptos aplicados
+
+**Herencia.** `Guerrero`, `Mago` y `Arquero` extienden `Personaje` con `extends` y reutilizan sus atributos y métodos.
+
+**Encadenamiento de constructores.** `super(...)` llama al constructor del padre y `this(...)` reutiliza otro constructor de la misma clase.
+
+**Clase y métodos abstractos.** `Personaje` define qué deben hacer todos los personajes, pero deja que cada clase hija decida cómo.
+
+**Interfaces.** `Mejorable` y `Curable` definen capacidades, incluyendo una constante (`CURACION_BASE`) y un método `default` (`mostrarMensajeNivel`).
+
+**Polimorfismo por sobrescritura.** Todos los métodos sobrescritos llevan `@Override`, y se usa `super.metodo()` para extender el comportamiento del padre en lugar de reemplazarlo.
+
+**Polimorfismo por referencia.** Una variable de tipo `Personaje` puede guardar cualquier clase hija (`Personaje p = new Mago()`). Al llamar `p.atacar(...)` o `p.mostrarEstado()`, Java ejecuta automáticamente el método de la clase real. Por eso ni el `Main` ni `Batalla` necesitan preguntar el tipo del personaje.
+
+**`instanceof` y casting.** Se usa únicamente en `intentarCurar` para consultar si un personaje tiene la capacidad `Curable`.
+
+#### ✅ Nuevas validaciones
+
+**Personajes derrotados.** Un personaje con 0 de vida no puede atacar, usar habilidades ni curarse.
+
+**Maná insuficiente.** Si el Mago no tiene maná suficiente, el Rayo Arcano se debilita a 3 de daño, la Bola de Fuego se reemplaza por un ataque básico y la curación no se realiza.
+
+**Atributos propios.** Se valida que el escudo no sea negativo, que el maná sea mayor que 0 y que la precisión esté entre 0 y 100; si no, se asigna el valor por defecto.
+
+**Entradas no numéricas.** Si el usuario escribe letras donde se espera un número, el programa vuelve a preguntar en lugar de cerrarse.
+
+#### 📋 Ejemplo de batalla automática
+
+```
+--- BATALLA AUTOMÁTICA ---
+Turno 1
+Mago Aprendiz lanza Rayo Arcano contra Guerrero Novato y causa 16.00 de daño
+El escudo de Guerrero Novato absorbe todo el daño (escudo restante: 4.00)
+Guerrero Novato ataca a Mago Aprendiz y causa 13.00 de daño
+Turno 2
+...
+Turno 3
+Mago Aprendiz lanza una Bola de Fuego contra Guerrero Novato y causa 40.00 de daño
+Guerrero Novato usa Golpe Furioso contra Mago Aprendiz y causa 20.50 de daño
+Guerrero Novato se lastima con el esfuerzo. Vida actual: 42.00 / 120.00
+...
+>>> El ganador es: Mago Aprendiz (Mago)
+```
+
+#### 📸 Captura de ejecución
+
+<!-- Reemplaza la ruta por la de tu captura dentro del repositorio -->
+
+![Ejecucion](./assets/imgs/image.png)
+![Ejecucion1](./assets/imgs/image1.png)
+![Ejecucion2 ](./assets/imgs/image3.png)
+![Ejecucion3](./assets/imgs/image-1.png)
+
+La captura muestra la creación de dos personajes de tipos distintos, una curación, una habilidad especial y una batalla automática completa.
+
+---
 
 ## 👨 AUTOR
 
